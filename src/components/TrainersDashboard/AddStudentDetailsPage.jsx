@@ -26,6 +26,7 @@ const AddStudentDetailsPage = () => {
   const [form, setForm] = useState({
     firstName: "",
     lastName: "",
+    dateOfBirth: "",
     category: "",
     joinedDate: "",
     email: "",
@@ -37,6 +38,7 @@ const AddStudentDetailsPage = () => {
   const isFormValid =
     form.firstName.trim() &&
     form.lastName.trim() &&
+    form.dateOfBirth.trim() &&
     form.category.trim() &&
     form.joinedDate.trim() &&
     form.email.trim() &&
@@ -109,6 +111,7 @@ const AddStudentDetailsPage = () => {
       await setDoc(doc(db, "trainerstudents", studentUID), {
         firstName: form.firstName,
         lastName: form.lastName,
+        dateOfBirth: form.dateOfBirth,
         category: form.category,
         joinedDate: form.joinedDate,
         email: form.email,
@@ -128,10 +131,11 @@ const AddStudentDetailsPage = () => {
         students: arrayUnion(studentUID),
       });
 
-      setSuccessMessage("Student added successfully 🎉");
+      alert("Student added successfully 🎉");
       setForm({
         firstName: "",
         lastName: "",
+        dateOfBirth: "",
         category: "",
         joinedDate: "",
         email: "",
@@ -226,7 +230,7 @@ const AddStudentDetailsPage = () => {
             </div>
           </div>
 
-          {/* Category & Date */}
+          {/* Category & Date of Birth */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
             <div>
               <label className="font-semibold">
@@ -243,6 +247,21 @@ const AddStudentDetailsPage = () => {
 
             <div>
               <label className="font-semibold">
+                Date of Birth <span className="text-red-500">*</span>
+              </label>
+              <input
+                type="date"
+                name="dateOfBirth"
+                value={form.dateOfBirth}
+                onChange={handleChange}
+                className="w-full rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 px-4 py-3 text-gray-900 dark:text-white focus:ring-2 focus:ring-orange-400 outline-none"
+              />
+            </div>
+          </div>
+          {/* Joined Date & Email */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+            <div>
+              <label className="font-semibold">
                 Joined Date <span className="text-red-500">*</span>
               </label>
               <input
@@ -253,10 +272,7 @@ const AddStudentDetailsPage = () => {
                 className="w-full rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 px-4 py-3 text-gray-900 dark:text-white focus:ring-2 focus:ring-orange-400 outline-none"
               />
             </div>
-          </div>
 
-          {/* Email & Phone */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
             <div>
               <label className="font-semibold">
                 E-mail <span className="text-red-500">*</span>
@@ -270,7 +286,9 @@ const AddStudentDetailsPage = () => {
                 className="w-full rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 px-4 py-3 text-gray-900 dark:text-white focus:ring-2 focus:ring-orange-400 outline-none"
               />
             </div>
-
+          </div>
+          {/* Phone Number & Fee Amount */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
             <div>
               <label className="font-semibold">
                 Phone Number <span className="text-red-500">*</span>
@@ -283,22 +301,25 @@ const AddStudentDetailsPage = () => {
                 className="w-full rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 px-4 py-3 text-gray-900 dark:text-white focus:ring-2 focus:ring-orange-400 outline-none"
               />
             </div>
+
+            <div>
+              <label className="font-semibold">
+                Fee Amount <span className="text-red-500">*</span>
+              </label>
+              <input
+                type="number"
+                name="feeAmount"
+                placeholder="Fee Amount"
+                value={form.feeAmount}
+                onChange={handleChange}
+                className="w-full rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 px-4 py-3 text-gray-900 dark:text-white focus:ring-2 focus:ring-orange-400 outline-none"
+              />
+            </div>
           </div>
 
-          {/* Fee Amount */}
-          <div>
-            <label className="font-semibold">
-              Fee Amount <span className="text-red-500">*</span>
-            </label>
-            <input
-              type="number"
-              name="feeAmount"
-              placeholder="Fee Amount"
-              value={form.feeAmount}
-              onChange={handleChange}
-              className="w-full rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 px-4 py-3 text-gray-900 dark:text-white focus:ring-2 focus:ring-orange-400 outline-none"
-            />
-          </div>
+
+
+
 
           {/* Save Button */}
           <div className="flex justify-center pt-6">
@@ -306,11 +327,10 @@ const AddStudentDetailsPage = () => {
               type="submit"
               disabled={loading || uploading || !isFormValid}
               className={`w-full sm:w-auto px-16 py-3 rounded-md font-extrabold transition
-               ${
-                 isFormValid
-                   ? "bg-orange-500 hover:bg-orange-600 text-white cursor-pointer"
-                   : "bg-orange-200 text-white cursor-not-allowed"
-               }`}
+               ${isFormValid
+                  ? "bg-orange-500 hover:bg-orange-600 text-white cursor-pointer"
+                  : "bg-orange-200 text-white cursor-not-allowed"
+                }`}
             >
               {loading ? "Saving..." : uploading ? "Uploading..." : "Save"}
             </button>

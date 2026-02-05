@@ -35,6 +35,7 @@ const AddStudentDetailsPage = () => {
     email: "",
     phone: "",
     studentFee: "",
+    dateOfBirth: "",
     address: "",
 
     // ✅ Student Photo URL
@@ -146,6 +147,7 @@ const AddStudentDetailsPage = () => {
         email: "",
         phone: "",
         studentFee: "",
+        dateOfBirth: "",
         address: "",
         studentPhotoUrl: "",
       });
@@ -299,21 +301,38 @@ const AddStudentDetailsPage = () => {
             </div>
           </div>
 
-          {/* Student Fee */}
-          <div>
-            <label className="block text-sm font-semibold mb-2">
-              Student Fee <span className="text-red-500">*</span>
-            </label>
-            <input
-              type="number"
-              className={inputClass}
-              placeholder="Enter Student Fee"
-              value={formData.studentFee}
-              onChange={(e) =>
-                setFormData({ ...formData, studentFee: e.target.value })
-              }
-            />
+          {/* Student Fee & Date of Birth */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+              <label className="block text-sm font-semibold mb-2">
+                Student Fee <span className="text-red-500">*</span>
+              </label>
+              <input
+                type="number"
+                className={inputClass}
+                placeholder="Enter Student Fee"
+                value={formData.studentFee}
+                onChange={(e) =>
+                  setFormData({ ...formData, studentFee: e.target.value })
+                }
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-semibold mb-2">
+                Date of Birth <span className="text-red-500">*</span>
+              </label>
+              <input
+                type="date"
+                className={inputClass}
+                value={formData.dateOfBirth}
+                onChange={(e) =>
+                  setFormData({ ...formData, dateOfBirth: e.target.value })
+                }
+              />
+            </div>
           </div>
+
 
           {/* Email & Phone */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -369,10 +388,9 @@ const AddStudentDetailsPage = () => {
               type="submit"
               disabled={!isFormValid}
               className={`w-full sm:w-auto px-16 py-3 rounded-xl text-lg font-extrabold transition-all duration-300
-                ${
-                  isFormValid
-                    ? "bg-orange-500 text-white hover:bg-orange-600 cursor-pointer shadow-md"
-                    : "bg-orange-200 text-white cursor-not-allowed"
+                ${isFormValid
+                  ? "bg-orange-500 text-white hover:bg-orange-600 cursor-pointer shadow-md"
+                  : "bg-orange-200 text-white cursor-not-allowed"
                 }`}
             >
               Save Student

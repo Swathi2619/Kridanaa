@@ -17,6 +17,7 @@ import TermsAndConditions from "../../pages/Terms";
 import PrivacyPolicy from "../../pages/Privacy";
 import { db } from "../../firebase";
 import { collection, query, where, getDocs } from "firebase/firestore";
+import { useAuth } from "../../context/AuthContext";
 
 /* =============================
    🔥 NEW ROLE STATE
@@ -27,6 +28,8 @@ const TrainersDashboard = () => {
   const [view, setView] = useState("trainersData");
   const [trainers, setTrainers] = useState([]);
   const [trainerType, setTrainerType] = useState("Trainer"); // NEW
+  const { institute } = useAuth();
+
 
   const studentLabel = trainerType === "Therapist" ? "Patients" : "Students";
   const trainerLabel = trainerType === "Therapist" ? "Therapist" : "Trainer";
@@ -244,7 +247,7 @@ const filteredTrainers = useMemo(() => {
 
   {/* Add Button */}
   <button
-    onClick={() => setView("addTrainer")}
+    onClick={() => setView("addStudent")}
     className="flex items-center gap-2 bg-orange-500 text-white px-6 py-2 rounded-full font-semibold"
   >
     <svg
@@ -291,7 +294,10 @@ const filteredTrainers = useMemo(() => {
         <aside className="w-72 bg-[#FFF7ED] flex flex-col border-r border-orange-200 h-screen overflow-y-auto overflow-x-hidden">
   <div className="flex items-center gap-3 px-4 py-4 border-b border-orange-800 flex-shrink-0">
     <div className="w-10 h-10 rounded-full bg-orange-700" />
-    <span className="text-xl font-extrabold">Institute Name</span>
+   <span className="text-xl font-extrabold">
+  {institute?.instituteName || "Institute"}
+</span>
+
   </div>
 
   <div className="flex-1 bg-[#FFF7EC] text-[#5D3A09] text-lg">

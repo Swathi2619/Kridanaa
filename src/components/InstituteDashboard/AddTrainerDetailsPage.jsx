@@ -26,12 +26,13 @@ const AddTrainerDetailsPage = () => {
   const [formData, setFormData] = useState({
     firstName: "",
     lastName: "",
-    dateOfBirth: "", 
+    dateOfBirth: "",
     category: "",
     joinedDate: "",
     email: "",
     phone: "",
-    certificates: "",
+    certificates: [], // array of image URLs
+
     monthlySalary: "",
     lpa: "",
 
@@ -56,12 +57,15 @@ const AddTrainerDetailsPage = () => {
     "email",
     "phone",
     "monthlySalary",
-    "certificates",
   ];
 
-  const isFormValid = requiredFields.every(
-    (field) => formData[field]?.toString().trim() !== "",
-  );
+  const isFormValid =
+    requiredFields.every(
+      (field) => formData[field] && formData[field].toString().trim() !== ""
+    ) &&
+    formData.certificates.length > 0 &&
+    !uploading;
+
 
   /* ---------------- CLOUDINARY UPLOAD (Same API) ---------------- */
   const uploadToCloudinary = async (file, type) => {
@@ -106,6 +110,28 @@ const AddTrainerDetailsPage = () => {
       alert("Profile Photo Uploaded Successfully ✅");
     }
   };
+  const handleCertificateUpload = async (e) => {
+    const files = Array.from(e.target.files);
+
+    if (formData.certificates.length + files.length > 3) {
+      alert("❌ You can upload only upto 3 certificate images");
+      return;
+    }
+
+    for (let file of files) {
+      const url = await uploadToCloudinary(file, "image");
+
+      if (url) {
+        setFormData((prev) => ({
+          ...prev,
+          certificates: [...prev.certificates, url],
+        }));
+
+        alert("Certificate uploaded successfully ✅");
+      }
+    }
+  };
+
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -147,10 +173,11 @@ const AddTrainerDetailsPage = () => {
         firstName: "",
         lastName: "",
         category: "",
+        dateOfBirth: "",
         joinedDate: "",
         email: "",
         phone: "",
-        certificates: "",
+        certificates: [],
         monthlySalary: "",
         lpa: "",
         pfNumber: "",
@@ -244,8 +271,7 @@ const AddTrainerDetailsPage = () => {
               />
             </div>
           </div>
-
-          {/* Category & Joined Date */}
+          {/* Category & Date of Birth */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="space-y-2">
               <label className={labelClass}>
@@ -263,6 +289,25 @@ const AddTrainerDetailsPage = () => {
 
             <div className="space-y-2">
               <label className={labelClass}>
+                Date of Birth <span className="text-red-500 ml-1">*</span>
+              </label>
+              <input
+                type="date"
+                className={inputClass}
+                value={formData.dateOfBirth}
+                onChange={(e) =>
+                  setFormData({ ...formData, dateOfBirth: e.target.value })
+                }
+              />
+            </div>
+          </div>
+
+
+
+          {/* Joined Date & Email */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="space-y-2">
+              <label className={labelClass}>
                 Joined Date <span className="text-red-500 ml-1">*</span>
               </label>
               <input
@@ -274,10 +319,7 @@ const AddTrainerDetailsPage = () => {
                 }
               />
             </div>
-          </div>
 
-          {/* Email & Phone */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="space-y-2">
               <label className={labelClass}>
                 E-mail <span className="text-red-500 ml-1">*</span>
@@ -292,7 +334,11 @@ const AddTrainerDetailsPage = () => {
                 }
               />
             </div>
+          </div>
 
+
+          {/* Phone Number & Monthly Salary */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="space-y-2">
               <label className={labelClass}>
                 Phone Number <span className="text-red-500 ml-1">*</span>
@@ -306,10 +352,7 @@ const AddTrainerDetailsPage = () => {
                 }
               />
             </div>
-          </div>
 
-          {/* Salary */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="space-y-2">
               <label className={labelClass}>
                 Monthly Salary <span className="text-red-500 ml-1">*</span>
@@ -324,7 +367,11 @@ const AddTrainerDetailsPage = () => {
                 }
               />
             </div>
+          </div>
 
+
+          {/* LPA & Certificate Images */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="space-y-2">
               <label className={labelClass}>LPA (Optional)</label>
               <input
@@ -337,22 +384,33 @@ const AddTrainerDetailsPage = () => {
                 }
               />
             </div>
+
+            <div className="space-y-2">
+              <label className={labelClass}>
+                Certificate Images <span className="text-red-500 ml-1">*</span>
+              </label>
+
+              <input
+                type="file"
+                accept="image/*"
+                multiple
+                onChange={handleCertificateUpload}
+                className="w-full border p-2 rounded-md"
+              />
+
+              <div className="flex gap-2 flex-wrap mt-2">
+                {formData.certificates.map((img, index) => (
+                  <img
+                    key={index}
+                    src={img}
+                    alt={`Certificate ${index + 1}`}
+                    className="w-20 h-20 object-cover rounded-md border"
+                  />
+                ))}
+              </div>
+            </div>
           </div>
 
-          {/* Certificates */}
-          <div className="space-y-2">
-            <label className={labelClass}>
-              Certificates <span className="text-red-500 ml-1">*</span>
-            </label>
-            <input
-              className={inputClass}
-              placeholder="Enter Certificates"
-              value={formData.certificates}
-              onChange={(e) =>
-                setFormData({ ...formData, certificates: e.target.value })
-              }
-            />
-          </div>
 
           {/* Submit */}
           <div className="pt-6 flex justify-center">
@@ -360,10 +418,9 @@ const AddTrainerDetailsPage = () => {
               type="submit"
               disabled={!isFormValid || uploading}
               className={`w-full sm:w-auto px-16 py-3 rounded-xl text-lg font-extrabold transition-all duration-300
-                ${
-                  isFormValid
-                    ? "bg-orange-500 text-white hover:bg-orange-600 cursor-pointer shadow-md"
-                    : "bg-orange-200 text-white cursor-not-allowed"
+                ${isFormValid
+                  ? "bg-orange-500 text-white hover:bg-orange-600 cursor-pointer shadow-md"
+                  : "bg-orange-200 text-white cursor-not-allowed"
                 }`}
             >
               {uploading ? "Uploading..." : "Save Trainer"}
