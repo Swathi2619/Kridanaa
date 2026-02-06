@@ -198,36 +198,35 @@ const StudentsAttendancePage = () => {
   return (
     <div className="h-full bg-white text-[#3F2A14] p-6 rounded-lg">
       {/* Search & Date */}
-<div className="mb-4">
-  <div className="flex items-center bg-gray-100 border border-gray-300 rounded-full px-4 py-2 w-full max-w-md">
-    🔍
-    <input
-      placeholder="Search students by name..."
-      value={search}
-      onChange={(e) => setSearch(e.target.value)}
-      className="bg-transparent outline-none text-sm w-full ml-2 text-[#3F2A14] placeholder-[#A16207]"
-    />
-  </div>
-</div>
+      <div className="mb-4">
+        <div className="flex items-center bg-gray-100 border border-gray-300 rounded-full px-4 py-2 w-full max-w-md">
+          🔍
+          <input
+            placeholder="Search students by name..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="bg-transparent outline-none text-sm w-full ml-2 text-[#3F2A14] placeholder-[#A16207]"
+          />
+        </div>
+      </div>
 
-{/* 🟠 Heading + Date */}
-<div className="flex items-center justify-between mb-4">
-  <h1 className="text-3xl font-extrabold text-orange-500">
-    Students Attendance
-  </h1>
+      {/* 🟠 Heading + Date */}
+      <div className="flex items-center justify-between mb-4">
+        <h1 className="text-3xl font-extrabold text-orange-500">
+          Students Attendance
+        </h1>
 
-  <input
-    type="date"
-    value={selectedDate}
-    max={today}
-    onChange={(e) => {
-      setSelectedDate(e.target.value);
-      setMessage("");
-    }}
-    className="bg-orange-500 text-white px-4 py-2 rounded-full"
-  />
-</div>
-
+        <input
+          type="date"
+          value={selectedDate}
+          max={today}
+          onChange={(e) => {
+            setSelectedDate(e.target.value);
+            setMessage("");
+          }}
+          className="bg-orange-500 text-white px-4 py-2 rounded-full"
+        />
+      </div>
 
       {message && (
         <div className="mb-3 text-orange-600 font-semibold text-sm">
@@ -248,64 +247,71 @@ const StudentsAttendancePage = () => {
         </div>
 
         <div className="bg-white text-black">
-          {paginatedRows.map((s) => {
-            const todayStatus = attendanceData[s.id]?.[selectedDate];
-            const counts = getCounts(s.id);
-            const editable = canEditAttendance(s.joinedDate);
-            const saving = savingStudentId === s.id;
+          {paginatedRows.length === 0 ? (
+            /* ✅ EMPTY STATE */
+            <div className="grid grid-cols-7 px-4 py-4 border-t text-center text-gray-500 font-medium">
+              <div className="col-span-7">No students assigned</div>
+            </div>
+          ) : (
+            paginatedRows.map((s) => {
+              const todayStatus = attendanceData[s.id]?.[selectedDate];
+              const counts = getCounts(s.id);
+              const editable = canEditAttendance(s.joinedDate);
+              const saving = savingStudentId === s.id;
 
-            return (
-              <div
-                key={s.id}
-                className="grid grid-cols-7 px-4 py-3 border-t items-center text-sm"
-              >
-                <div className="font-semibold">
-                  {s.firstName} {s.lastName}
-                </div>
-                <div>{s.category || "-"}</div>
-                <div className="text-xs text-gray-500">{s.joinedDate}</div>
+              return (
+                <div
+                  key={s.id}
+                  className="grid grid-cols-7 px-4 py-3 border-t items-center text-sm"
+                >
+                  <div className="font-semibold">
+                    {s.firstName} {s.lastName}
+                  </div>
+                  <div>{s.category || "-"}</div>
+                  <div className="text-xs text-gray-500">{s.joinedDate}</div>
 
-                <div className="flex justify-center">
-                  <button
-                    disabled={!editable || saving}
-                    onClick={() =>
-                      markAttendance(s.id, "present", s.joinedDate)
-                    }
-                    className={`px-3 py-1 rounded-full text-xs font-semibold ${
-                      todayStatus === "present"
-                        ? "bg-green-500 text-white"
-                        : "bg-gray-200 text-gray-700"
-                    }`}
-                  >
-                    {saving ? "Saving..." : "Present"}
-                  </button>
-                </div>
+                  <div className="flex justify-center">
+                    <button
+                      disabled={!editable || saving}
+                      onClick={() =>
+                        markAttendance(s.id, "present", s.joinedDate)
+                      }
+                      className={`px-3 py-1 rounded-full text-xs font-semibold ${
+                        todayStatus === "present"
+                          ? "bg-green-500 text-white"
+                          : "bg-gray-200 text-gray-700"
+                      }`}
+                    >
+                      {saving ? "Saving..." : "Present"}
+                    </button>
+                  </div>
 
-                <div className="flex justify-center">
-                  <button
-                    disabled={!editable || saving}
-                    onClick={() =>
-                      markAttendance(s.id, "absent", s.joinedDate)
-                    }
-                    className={`px-3 py-1 rounded-full text-xs font-semibold ${
-                      todayStatus === "absent"
-                        ? "bg-red-500 text-white"
-                        : "bg-gray-200 text-gray-700"
-                    }`}
-                  >
-                    {saving ? "Saving..." : "Absent"}
-                  </button>
-                </div>
+                  <div className="flex justify-center">
+                    <button
+                      disabled={!editable || saving}
+                      onClick={() =>
+                        markAttendance(s.id, "absent", s.joinedDate)
+                      }
+                      className={`px-3 py-1 rounded-full text-xs font-semibold ${
+                        todayStatus === "absent"
+                          ? "bg-red-500 text-white"
+                          : "bg-gray-200 text-gray-700"
+                      }`}
+                    >
+                      {saving ? "Saving..." : "Absent"}
+                    </button>
+                  </div>
 
-                <div className="font-semibold text-green-600 text-center">
-                  {counts.present}
+                  <div className="font-semibold text-green-600 text-center">
+                    {counts.present}
+                  </div>
+                  <div className="font-semibold text-red-600 text-center">
+                    {counts.absent}
+                  </div>
                 </div>
-                <div className="font-semibold text-red-600 text-center">
-                  {counts.absent}
-                </div>
-              </div>
-            );
-          })}
+              );
+            })
+          )}
         </div>
       </div>
 

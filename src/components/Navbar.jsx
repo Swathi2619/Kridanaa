@@ -21,7 +21,6 @@ const serviceTypes = [
   { name: "Ice Sports", path: "/services/ice-sports" },
   { name: "Wellness", path: "/services/wellness" },
   { name: "Dance", path: "/services/dance" },
-  { name: "Play School", path: "/services/play-school" },
 ];
 
 const Navbar = () => {

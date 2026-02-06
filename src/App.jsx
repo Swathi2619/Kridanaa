@@ -56,7 +56,6 @@ import AdventureOutdoorSports from "./pages/Services/AdventureOutdoorSports.jsx"
 import IceSports from "./pages/Services/IceSports.jsx";
 import Wellness from "./pages/Services/Wellness.jsx";
 import Dance from "./pages/Services/Dance.jsx";
-import PlaySchool from "./pages/Services/PlaySchool";
 import AvailableDemoClasses from "./pages/AvailableDemoClasses.jsx";
 import "./index.css";
 import Plans from "./pages/Plans.jsx";
@@ -173,7 +172,7 @@ function App() {
               <Route path="/services/ice-sports" element={<IceSports />} />
               <Route path="/services/wellness" element={<Wellness />} />
               <Route path="/services/dance" element={<Dance />} />
-              <Route path="/services/play-school" element={<PlaySchool />} />
+              
               <Route path="/plans" element={<Plans />} />
               <Route
                 path="/book-demo/:instituteId"

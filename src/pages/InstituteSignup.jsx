@@ -13,6 +13,9 @@ export default function InstituteSignup() {
   const role = "institute";
   const [profileImage, setProfileImage] = useState(null);
   const [profileImageFile, setProfileImageFile] = useState(null);
+  const inputStyle =
+    "w-full border border-orange-200  p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-all";
+
   // ✅ Agreement state (NEW)
   // ✅ Loading state (NEW)
   const [loading, setLoading] = useState(false);
@@ -23,26 +26,162 @@ export default function InstituteSignup() {
     // Step 1
     instituteName: "",
     organizationType: "",
-    locationName: "",
-    latitude: "",
-    longitude: "",
+    founderName: "",
+    designation: "",
+    certifications: [],
+    category: "",
+    subCategory: "",
     yearFounded: "",
     phoneNumber: "",
     email: "",
-
     password: "",
     confirmPassword: "",
     // Step 2
-    address: "",
     zipCode: "",
     city: "",
     state: "",
-    websiteLink: "",
+    building: "",
+    street: "",
+    landmark: "",
+    district: "",
+    country: "",
+
     // Step 3
-    firstName: "",
-    lastName: "",
-    designation: "",
+    bankDetails: "",
+    upiDetails: "",
+
   });
+  const categories = [
+    "Martial Arts",
+    "Team Ball Sports",
+    "Racket Sports",
+    "Fitness",
+    "Target & Precision Sports",
+    "Equestrian Sports",
+    "Adventure & Outdoor Sports",
+    "Ice Sports",
+    "Wellness",
+    "Dance",
+  ];
+
+  const subCategoryMap = {
+    "Martial Arts": [
+      "Karate",
+      "Taekwondo",
+      "Boxing",
+      "Wrestling",
+      "Fencing",
+      "Kendo",
+    ],
+    "Team Ball Sports": [
+      "Football",
+      "Hockey",
+      "Basketball",
+      "Handball",
+      "Rugby",
+      "American Football",
+      "Water Polo",
+      "Lacrosse",
+    ],
+    "Racket Sports": [
+      "Tennis",
+      "Badminton",
+      "Pickleball",
+      "Soft Tennis",
+      "Padel Tennis",
+      "Speedminton",
+    ],
+    Fitness: [
+      "Strength / Muscular Fitness",
+      "Muscular Endurance",
+      "Flexibility Fitness",
+      "Balance & Stability",
+      "Skill / Performance Fitness",
+    ],
+    "Target & Precision Sports": [
+      "Archery",
+      "Shooting",
+      "Darts",
+      "Bowling",
+      "Golf",
+      "Billiards",
+      "Bocce",
+      "Lawn",
+    ],
+    "Equestrian Sports": [
+      "Dressage",
+      "Show Jumping",
+      "Eventing",
+      "Cross Country",
+      "Endurance Riding",
+      "Polo",
+      "Horse Racing",
+      "Para-Equestrian",
+    ],
+    "Adventure & Outdoor Sports": [
+      "Rock Climbing",
+      "Trekking",
+      "Camping",
+      "Kayaking",
+      "Paragliding",
+      "Surfing",
+      "Mountain Biking",
+      "Ziplining",
+    ],
+    "Ice Sports": [
+      "Ice Skating",
+      "Figure Skating",
+      "Ice Hockey",
+      "Speed Skating",
+      "Short Track Skating",
+      "Ice Dancing",
+      "Curling",
+      "Synchronized Skating",
+    ],
+    Wellness: [
+      "Physical Wellness",
+      "Mental Wellness",
+      "Social Wellness",
+      "Emotional Wellness",
+      "Spiritual Wellness",
+      "Lifestyle Wellness",
+    ],
+    Dance: [
+      "Classical Dance",
+      "Contemporary Dance",
+      "Hip-Hop Dance",
+      "Folk Dance",
+      "Western Dance",
+      "Latin Dance",
+      "Fitness Dance",
+      "Creative & Kids Dance",
+    ],
+  };
+  const handleCertificateChange = (e) => {
+    const files = Array.from(e.target.files);
+
+    setFormData((prev) => ({
+      ...prev,
+      certifications: files,
+    }));
+  };
+
+  const handleCategoryChange = (e) => {
+    const selectedCategory = e.target.value;
+
+    setFormData((prev) => ({
+      ...prev,
+      category: selectedCategory,
+      subCategory: "", // reset when category changes
+    }));
+  };
+  const handleSubCategoryChange = (e) => {
+    setFormData((prev) => ({
+      ...prev,
+      subCategory: e.target.value,
+    }));
+  };
+
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -64,26 +203,25 @@ export default function InstituteSignup() {
   // Validation for each step
   const validateStep = () => {
     if (step === 1) {
+      if (!profileImageFile) {
+        alert("Please upload institute logo");
+        return false;
+      }
       if (
         !formData.instituteName ||
-        !formData.organizationType ||
+        !formData.founderName ||
+        !formData.designation ||
         !formData.yearFounded ||
+        !formData.category ||
+        !formData.subCategory ||
         !formData.phoneNumber ||
-        !formData.email ||
-        !formData.password ||
-        !formData.confirmPassword
+        !formData.email
       ) {
         alert("Please fill all fields in Step 1");
         return false;
       }
-
-      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
-        alert("Please enter a valid email");
-        return false;
-      }
-
-      if (formData.password !== formData.confirmPassword) {
-        alert("Passwords do not match");
+      if (!formData.password || !formData.confirmPassword) {
+        alert("Please enter password");
         return false;
       }
 
@@ -92,15 +230,34 @@ export default function InstituteSignup() {
         return false;
       }
 
+      if (formData.password !== formData.confirmPassword) {
+        alert("Passwords do not match");
+        return false;
+      }
+
+      if (!formData.certifications || formData.certifications.length === 0) {
+        alert("Please upload at least one certification or licence");
+        return false;
+      }
+
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
+        alert("Please enter a valid email");
+        return false;
+      }
+
       return true;
     }
 
+
     if (step === 2) {
       if (
-        !formData.address ||
-        !formData.zipCode ||
+        !formData.building ||
+        !formData.street ||
         !formData.city ||
-        !formData.state
+        !formData.district ||
+        !formData.state ||
+        !formData.country ||
+        !formData.zipCode
       ) {
         alert("Please fill all required address fields");
         return false;
@@ -108,19 +265,23 @@ export default function InstituteSignup() {
       return true;
     }
 
+
     if (step === 3) {
-      if (!formData.firstName || !formData.lastName || !formData.designation) {
-        alert("Please fill all management fields");
-        return false;
-      }
       return true;
     }
+
   };
 
   const handleNext = () => {
-    if (validateStep()) {
-      setStep((prev) => prev + 1);
+    if (!validateStep()) return;
+
+    // require agreement before leaving step 1
+    if (step === 1 && !agreed) {
+      alert("Please agree to policies to continue");
+      return;
     }
+
+    setStep((prev) => prev + 1);
   };
 
   const handlePrev = () => {
@@ -159,6 +320,29 @@ export default function InstituteSignup() {
       return "";
     }
   };
+  const uploadCertificatesToCloudinary = async (files) => {
+    const urls = [];
+
+    for (const file of files) {
+      const fd = new FormData();
+      fd.append("file", file);
+      fd.append("upload_preset", "kridana_upload");
+
+      const res = await fetch(
+        "https://api.cloudinary.com/v1_1/daiyvial8/image/upload",
+        {
+          method: "POST",
+          body: fd,
+        }
+      );
+
+      const data = await res.json();
+      urls.push(data.secure_url);
+    }
+
+    return urls;
+  };
+
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -186,33 +370,49 @@ export default function InstituteSignup() {
       if (profileImageFile) {
         profileImageUrl = await uploadProfileToCloudinary(profileImageFile);
       }
+      let certificateUrls = [];
+
+      if (formData.certifications?.length) {
+        certificateUrls = await uploadCertificatesToCloudinary(
+          formData.certifications
+        );
+      }
+
 
       await setDoc(doc(db, "institutes", uid), {
         role: "institute",
         status: "pending",
 
+        // Step 1
         instituteName: formData.instituteName,
         organizationType: formData.organizationType,
+        founderName: formData.founderName,
+        designation: formData.designation,
         yearFounded: formData.yearFounded,
+        category: formData.category,
+        subCategory: formData.subCategory,
         phoneNumber: formData.phoneNumber,
         email: formData.email,
+        certifications: certificateUrls,
 
-        address: formData.address,
-        zipCode: formData.zipCode,
+        // Step 2
+        building: formData.building,
+        street: formData.street,
+        landmark: formData.landmark || "",
         city: formData.city,
+        district: formData.district,
         state: formData.state,
-        websiteLink: formData.websiteLink || "",
+        country: formData.country,
+        zipCode: formData.zipCode,
 
-        firstName: formData.firstName,
-        lastName: formData.lastName,
-        designation: formData.designation,
+        // Step 3
+        bankDetails: formData.bankDetails || "",
+        upiDetails: formData.upiDetails || "",
 
+        // Profile Image
         profileImageUrl,
 
-        locationName: formData.locationName,
-        latitude: formData.latitude,
-        longitude: formData.longitude,
-
+        // Agreements
         agreements: {
           termsAndConditions: true,
           privacyPolicy: true,
@@ -258,17 +458,12 @@ export default function InstituteSignup() {
           </div>
           <button
             onClick={() => navigate("/login?role=institute")}
-            className="mt-10 text-orange-400 underline text-lg font-bold transition-transform duration-300 hover:scale-105 hover:text-orange-500"
+            className="mt-10 text-orange-400 text-lg font-bold transition-transform duration-300 hover:scale-105 hover:text-orange-500"
           >
             Institute Sign In
           </button>
 
-          <button
-            onClick={() => navigate("/institute")}
-            className="text-gray-400 hover:text-gray-600 text-2xl"
-          >
-            ✕
-          </button>
+
         </div>
 
         {/* Progress Bar */}
@@ -286,246 +481,199 @@ export default function InstituteSignup() {
           {/* STEP 1 */}
           {step === 1 && (
             <div className="animate-fade-in space-y-6">
-              {/* Profile section */}
-              <div className="flex items-center gap-6">
-                <div className="relative">
+              {/* ===== LOGO UPLOAD (TOP like image) ===== */}
+              <div className="flex flex-col items-center justify-center gap-4">
+
+
+                <div className="w-24 h-24 rounded-full bg-gray-200 overflow-hidden flex items-center justify-center">
                   {profileImage ? (
                     <img
                       src={profileImage}
-                      alt="Profile"
-                      className="w-24 h-24 rounded-full object-cover bg-gray-200"
+                      alt="logo"
+                      className="w-full h-full object-cover"
                     />
                   ) : (
-                    <div className="w-24 h-24 rounded-full bg-gray-300" />
+                    <span className="text-gray-400 text-sm">Logo</span>
                   )}
                 </div>
 
-                <div className="flex gap-2">
-                  <label className="cursor-pointer">
-                    <div className="flex items-center gap-2 border-2 border-orange-500 text-orange-500 px-4 py-2 rounded-lg hover:bg-orange-50 transition">
-                      <Edit2 size={18} />
-                      <span>Change profile</span>
-                    </div>
-                    <input
-                      type="file"
-                      accept="image/*"
-                      onChange={handleProfileImageChange}
-                      className="hidden"
-                    />
-                  </label>
+                <label className="cursor-pointer border border-orange-500 text-orange-500 px-4 py-2 rounded-md hover:bg-orange-50">
+                  Upload Logo
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={handleProfileImageChange}
+                    className="hidden"
+                  />
+                </label>
 
+                {profileImage && (
                   <button
                     type="button"
-                    className="border-2 border-gray-300 text-gray-600 px-3 py-2 rounded-lg hover:bg-gray-100 transition"
                     onClick={() => {
                       setProfileImage(null);
                       setProfileImageFile(null);
                     }}
+                    className="text-red-500"
                   >
-                    <Trash2 size={18} />
+                    <Trash2 size={20} />
                   </button>
-                </div>
+                )}
               </div>
 
-              {/* Institute name directly after profile */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-4">
+
+              {/* Fields */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+
                 <div>
-                  <label className="block mb-2 text-gray-900 font-semibold">
-                    Institute Name*
-                  </label>
+                  <label className="block font-semibold mb-2">Institute Name*</label>
                   <input
                     type="text"
                     name="instituteName"
-                    placeholder="Enter Institute Name"
                     value={formData.instituteName}
                     onChange={handleChange}
-                    className="w-full border-2 border-gray-300 rounded-lg p-3 focus:outline-none focus:border-orange-500 transition"
+                    className={inputStyle}
                   />
                 </div>
+
                 <div>
-                  <label className="block mb-2 text-gray-900 font-semibold">
-                    Organization Type*
-                  </label>
-                  <select
-                    name="organizationType"
-                    value={formData.organizationType}
+                  <label className="block font-semibold mb-2">Founder Name*</label>
+                  <input
+                    type="text"
+                    name="founderName"
+                    value={formData.founderName}
                     onChange={handleChange}
-                    className="w-full border-2 border-gray-300 rounded-lg p-3 focus:outline-none focus:border-orange-500 transition"
-                  >
-                    <option value="">Select Organization Type</option>
-                    <option value="Institute">Institute</option>
-                    <option value="Clinic">Clinic</option>
-                    <option value="Sports Center">Sports Center</option>
-                    <option value="Play School">Play School</option>
-                  </select>
-                </div>
-
-                <div className="border border-gray-300 rounded-lg p-4 space-y-4">
-                  <h3 className="text-lg font-bold text-gray-900 pb-2">
-                    Institute Location
-                  </h3>
-
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                      <label className="block mb-2 text-gray-900 font-semibold">
-                        Location Name*
-                      </label>
-                      <input
-                        type="text"
-                        name="locationName"
-                        placeholder="Enter Location Name"
-                        value={formData.locationName}
-                        onChange={handleChange}
-                        className="w-full border-2 border-gray-300 rounded-lg p-3 focus:outline-none focus:border-orange-500 transition"
-                      />
-                    </div>
-
-                    <div>
-                      <label className="block mb-2 text-gray-900 font-semibold">
-                        Latitude*
-                      </label>
-                      <input
-                        type="text"
-                        name="latitude"
-                        placeholder="Enter Latitude"
-                        value={formData.latitude}
-                        onChange={handleChange}
-                        className="w-full border-2 border-gray-300 rounded-lg p-3 focus:outline-none focus:border-orange-500 transition"
-                      />
-                    </div>
-
-                    <div>
-                      <label className="block mb-2 text-gray-900 font-semibold">
-                        Longitude*
-                      </label>
-                      <input
-                        type="text"
-                        name="longitude"
-                        placeholder="Enter Longitude"
-                        value={formData.longitude}
-                        onChange={handleChange}
-                        className="w-full border-2 border-gray-300 rounded-lg p-3 focus:outline-none focus:border-orange-500 transition"
-                      />
-                    </div>
-                  </div>
-
-                  <button
-                    type="button"
-                    onClick={async () => {
-                      if (!navigator.geolocation) {
-                        alert("Geolocation is not supported by your browser");
-                        return;
-                      }
-
-                      navigator.geolocation.getCurrentPosition(
-                        async (position) => {
-                          const { latitude, longitude } = position.coords;
-                          setFormData((prev) => ({
-                            ...prev,
-                            latitude: latitude.toString(),
-                            longitude: longitude.toString(),
-                          }));
-
-                          // Reverse geocoding using OpenStreetMap
-                          try {
-                            const response = await fetch(
-                              `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}`,
-                            );
-                            const data = await response.json();
-                            setFormData((prev) => ({
-                              ...prev,
-                              locationName: data.display_name || "",
-                            }));
-                          } catch (err) {
-                            console.error(
-                              "Failed to fetch location name:",
-                              err,
-                            );
-                          }
-                        },
-                        (error) => {
-                          alert(
-                            "Could not fetch location. Please enter manually.",
-                          );
-                          console.error(error);
-                        },
-                      );
-                    }}
-                    className="mt-2 bg-orange-500 text-white px-4 py-2 rounded-lg hover:bg-orange-600 transition"
-                  >
-                    Fetch Current Location
-                  </button>
+                    className={inputStyle}
+                  />
                 </div>
 
                 <div>
-                  <label className="block mb-2 text-gray-900 font-semibold">
-                    Year Founded*
-                  </label>
+                  <label className="block font-semibold mb-2">Designation*</label>
+                  <input
+                    type="text"
+                    name="designation"
+                    value={formData.designation}
+                    onChange={handleChange}
+                    className={inputStyle}
+                  />
+                </div>
+
+                <div>
+                  <label className="block font-semibold mb-2">Year Founded*</label>
                   <input
                     type="number"
                     name="yearFounded"
-                    placeholder="e.g. 2020"
                     value={formData.yearFounded}
                     onChange={handleChange}
-                    className="w-full border-2 border-gray-300 rounded-lg p-3 focus:outline-none focus:border-orange-500 transition"
+                    className={inputStyle}
                   />
                 </div>
 
+                <div className="md:col-span-2">
+                  <label className="block font-semibold mb-2">Certifications / Licence*</label>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    multiple
+                    onChange={handleCertificateChange}
+                    className={inputStyle}
+                  />
+
+                  <p className="text-sm text-gray-500 mt-1">
+                    Upload certification or licence images
+                  </p>
+                </div>
+
+                {/* Category + Sub Category – SAME ROW */}
                 <div>
-                  <label className="block mb-2 text-gray-900 font-semibold">
-                    Phone number*
-                  </label>
+                  <label className="block font-semibold mb-2">Category*</label>
+                  <select
+                    name="category"
+                    value={formData.category}
+                    onChange={handleCategoryChange}
+                    className={inputStyle}
+                  >
+                    <option value="">Select Category</option>
+                    {categories.map((cat) => (
+                      <option key={cat} value={cat}>
+                        {cat}
+                      </option>
+                    ))}
+                  </select>
+
+                </div>
+
+                <div>
+                  <label className="block font-semibold mb-2">Sub Category*</label>
+                  <select
+                    name="subCategory"
+                    value={formData.subCategory}
+                    onChange={handleSubCategoryChange}
+                    disabled={!formData.category}
+                    className={inputStyle}
+                  >
+                    <option value="">Select Sub Category</option>
+
+                    {formData.category &&
+                      subCategoryMap[formData.category]?.map((sub) => (
+                        <option key={sub} value={sub}>
+                          {sub}
+                        </option>
+                      ))}
+                  </select>
+
+                </div>
+
+
+                <div>
+                  <label className="block font-semibold mb-2">Phone Number*</label>
                   <input
                     type="tel"
                     name="phoneNumber"
-                    placeholder="Enter Phone Number"
                     value={formData.phoneNumber}
                     onChange={handleChange}
-                    className="w-full border-2 border-gray-300 rounded-lg p-3 focus:outline-none focus:border-orange-500 transition"
+                    className={inputStyle}
                   />
                 </div>
 
                 <div>
-                  <label className="block mb-2 text-gray-900 font-semibold">
-                    E-Mail I'd*
-                  </label>
+                  <label className="block font-semibold mb-2">Email*</label>
                   <input
                     type="email"
                     name="email"
-                    placeholder="Enter Email"
                     value={formData.email}
                     onChange={handleChange}
-                    className="w-full border-2 border-gray-300 rounded-lg p-3 focus:outline-none focus:border-orange-500 transition"
+                    className={inputStyle}
                   />
                 </div>
-              </div>
-              <div>
-                <label className="block mb-2 text-gray-900 font-semibold">
-                  Password*
-                </label>
-                <input
-                  type="password"
-                  name="password"
-                  value={formData.password}
-                  onChange={handleChange}
-                  className="w-full border-2 border-gray-300 rounded-lg p-3 focus:outline-none focus:border-orange-500 transition"
-                />
-              </div>
+                {/* Password */}
+                <div>
+                  <label className="block font-semibold mb-2">Create Password*</label>
+                  <input
+                    type="password"
+                    name="password"
+                    value={formData.password}
+                    onChange={handleChange}
+                    className={inputStyle}
+                  />
+                </div>
 
-              <div>
-                <label className="block mb-2 text-gray-900 font-semibold">
-                  Confirm Password*
-                </label>
-                <input
-                  type="password"
-                  name="confirmPassword"
-                  value={formData.confirmPassword}
-                  onChange={handleChange}
-                  className="w-full border-2 border-gray-300 rounded-lg p-3 focus:outline-none focus:border-orange-500 transition"
-                />
+                <div>
+                  <label className="block font-semibold mb-2">Re-Enter Password*</label>
+                  <input
+                    type="password"
+                    name="confirmPassword"
+                    value={formData.confirmPassword}
+                    onChange={handleChange}
+                    className={inputStyle}
+                  />
+                </div>
+
+
               </div>
             </div>
           )}
+
 
           {/* STEP 2 */}
           {step === 2 && (
@@ -534,136 +682,156 @@ export default function InstituteSignup() {
                 Add Address
               </h3>
 
-              <div className="border border-gray-300 rounded-lg p-4 space-y-4">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block mb-2 text-gray-900 font-semibold">
-                      Address*
-                    </label>
-                    <input
-                      type="text"
-                      name="address"
-                      placeholder="Enter Street Address"
-                      value={formData.address}
-                      onChange={handleChange}
-                      className="w-full border-2 border-gray-300 rounded-lg p-3 focus:outline-none focus:border-orange-500 transition"
-                    />
-                  </div>
 
-                  <div>
-                    <label className="block mb-2 text-gray-900 font-semibold">
-                      Zip code*
-                    </label>
-                    <input
-                      type="text"
-                      name="zipCode"
-                      placeholder="Enter Zip Code"
-                      value={formData.zipCode}
-                      onChange={handleChange}
-                      className="w-full border-2 border-gray-300 rounded-lg p-3 focus:outline-none focus:border-orange-500 transition"
-                    />
-                  </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
 
-                  <div>
-                    <label className="block mb-2 text-gray-900 font-semibold">
-                      City*
-                    </label>
-                    <input
-                      type="text"
-                      name="city"
-                      placeholder="Enter City"
-                      value={formData.city}
-                      onChange={handleChange}
-                      className="w-full border-2 border-gray-300 rounded-lg p-3 focus:outline-none focus:border-orange-500 transition"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block mb-2 text-gray-900 font-semibold">
-                      State*
-                    </label>
-                    <input
-                      type="text"
-                      name="state"
-                      placeholder="Enter State"
-                      value={formData.state}
-                      onChange={handleChange}
-                      className="w-full border-2 border-gray-300 rounded-lg p-3 focus:outline-none focus:border-orange-500 transition"
-                    />
-                  </div>
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">
+                    Building / Flat / Door Number *
+                  </label>
+                  <input
+                    type="text"
+                    name="building"
+                    value={formData.building}
+                    onChange={handleChange}
+                    className={inputStyle}
+                  />
                 </div>
 
                 <div>
-                  <label className="block mb-2 text-gray-900 font-semibold">
-                    Website link
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">
+                    Street / Area / Locality *
                   </label>
                   <input
-                    type="url"
-                    name="websiteLink"
-                    placeholder="Enter Website Link (Optional)"
-                    value={formData.websiteLink}
+                    type="text"
+                    name="street"
+                    value={formData.street}
                     onChange={handleChange}
-                    className="w-full border-2 border-gray-300 rounded-lg p-3 focus:outline-none focus:border-orange-500 transition"
+                    className={inputStyle}
                   />
                 </div>
+
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">
+                    Landmark (optional)
+                  </label>
+                  <input
+                    type="text"
+                    name="landmark"
+                    value={formData.landmark}
+                    onChange={handleChange}
+                    className={inputStyle}
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">
+                    City / Town *
+                  </label>
+                  <input
+                    type="text"
+                    name="city"
+                    value={formData.city}
+                    onChange={handleChange}
+                    className={inputStyle}
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">
+                    District *
+                  </label>
+                  <input
+                    type="text"
+                    name="district"
+                    value={formData.district}
+                    onChange={handleChange}
+                    className={inputStyle}
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">
+                    State *
+                  </label>
+                  <input
+                    type="text"
+                    name="state"
+                    value={formData.state}
+                    onChange={handleChange}
+                    className={inputStyle}
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">
+                    Country *
+                  </label>
+                  <input
+                    type="text"
+                    name="country"
+                    value={formData.country}
+                    onChange={handleChange}
+                    className={inputStyle}
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">
+                    PIN / ZIP Code *
+                  </label>
+                  <input
+                    type="text"
+                    name="zipCode"
+                    value={formData.zipCode}
+                    onChange={handleChange}
+                    className={inputStyle}
+                  />
+                </div>
+
               </div>
             </div>
-          )}
 
+          )}
           {/* STEP 3 */}
           {step === 3 && (
             <div className="animate-fade-in space-y-6">
-              <h3 className="text-xl font-bold text-gray-900 pb-2">
-                Add Management Details
-              </h3>
+              <p className="text-red-500 pb-2">
+                You can add your institute&apos;s bank details
+              </p>
 
-              <div className="border border-gray-300 rounded-lg p-4 space-y-4">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block mb-2 text-gray-900 font-semibold">
-                      First Name*
-                    </label>
-                    <input
-                      type="text"
-                      name="firstName"
-                      placeholder="Enter First Name"
-                      value={formData.firstName}
-                      onChange={handleChange}
-                      className="w-full border-2 border-gray-300 rounded-lg p-3 focus:outline-none focus:border-orange-500 transition"
-                    />
-                  </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
 
-                  <div>
-                    <label className="block mb-2 text-gray-900 font-semibold">
-                      Last Name*
-                    </label>
-                    <input
-                      type="text"
-                      name="lastName"
-                      placeholder="Enter Last Name"
-                      value={formData.lastName}
-                      onChange={handleChange}
-                      className="w-full border-2 border-gray-300 rounded-lg p-3 focus:outline-none focus:border-orange-500 transition"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block mb-2 text-gray-900 font-semibold">
-                      Designation Details*
-                    </label>
-                    <input
-                      type="text"
-                      name="designation"
-                      placeholder="Enter Designation"
-                      value={formData.designation}
-                      onChange={handleChange}
-                      className="w-full border-2 border-gray-300 rounded-lg p-3 focus:outline-none focus:border-orange-500 transition"
-                    />
-                  </div>
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">
+                    Bank Details (Optional)
+                  </label>
+                  <input
+                    type="text"
+                    name="bankDetails"
+                    value={formData.bankDetails}
+                    onChange={handleChange}
+                    className={inputStyle}
+                  />
                 </div>
+
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">
+                    UPI Details (Optional)
+                  </label>
+                  <input
+                    type="text"
+                    name="upiDetails"
+                    value={formData.upiDetails}
+                    onChange={handleChange}
+                   className={inputStyle}
+                  />
+                </div>
+
               </div>
             </div>
           )}
+
           {/* ✅ AGREEMENT SECTION */}
           <div className="flex items-start gap-2 text-sm text-gray-700 mt-4">
             <input
@@ -724,11 +892,10 @@ export default function InstituteSignup() {
               <button
                 type="submit"
                 disabled={!agreed || loading}
-                className={`flex-1 p-3 rounded-lg font-semibold transition-colors flex items-center justify-center gap-2 ${
-                  agreed && !loading
-                    ? "bg-orange-500 text-white hover:bg-orange-600"
-                    : "bg-gray-300 text-gray-500 cursor-not-allowed"
-                }`}
+                className={`flex-1 p-3 rounded-lg font-semibold transition-colors flex items-center justify-center gap-2 ${agreed && !loading
+                  ? "bg-orange-500 text-white hover:bg-orange-600"
+                  : "bg-gray-300 text-gray-500 cursor-not-allowed"
+                  }`}
               >
                 {loading ? (
                   <>

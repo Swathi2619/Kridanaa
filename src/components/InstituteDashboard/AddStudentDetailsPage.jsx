@@ -1,3 +1,4 @@
+// src/pages/AddStudentDetailsPage.jsx
 import React, { useState } from "react";
 import {
   doc,
@@ -7,124 +8,259 @@ import {
   serverTimestamp,
 } from "firebase/firestore";
 import { createUserWithEmailAndPassword } from "firebase/auth";
-
 import { db, secondaryAuth } from "../../firebase";
 import { useAuth } from "../../context/AuthContext";
 
-const inputClass =
-  "w-full border border-gray-300 rounded-md px-4 py-3 text-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-orange-400";
-
-const textareaClass =
-  "w-full border border-gray-300 rounded-md px-4 py-3 text-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-orange-400";
-
 const DEFAULT_PASSWORD = "123456";
+
+const inputClass =
+  "w-full bg-white placeholder:text-gray-400 border border-[#FED7AA] rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-orange-400";
+const selectClass =
+  "w-full bg-white placeholder:text-gray-400 border border-[#FED7AA] rounded-md px-3 py-2 text-sm " +
+  "focus:outline-none focus:ring-1 focus:ring-orange-400 " +
+  "appearance-none cursor-pointer bg-[url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%23FB923C' stroke-width='2'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' d='M19 9l-7 7-7-7'/%3E%3C/svg%3E\")] " +
+  "bg-no-repeat bg-[right_0.75rem_center] bg-[length:1.25rem]";
+
 
 const AddStudentDetailsPage = () => {
   const { user, institute } = useAuth();
 
   const [uploading, setUploading] = useState(false);
-  const [uploadMsg, setUploadMsg] = useState("");
+  const [photoUrl, setPhotoUrl] = useState("");
 
   const [formData, setFormData] = useState({
     firstName: "",
     lastName: "",
     fatherName: "",
+    dob: "",
     category: "",
-    batchNumber: "",
-    joinedDate: "",
-    email: "",
+    subCategory: "",
+    days: "",
+    timings: "",
+    branch: "",
+    slotNumber: "",
+    fees: "",
+    joiningDate: "",
     phone: "",
-    studentFee: "",
-    dateOfBirth: "",
-    address: "",
-
-    // ✅ Student Photo URL
-    studentPhotoUrl: "",
+    email: "",
   });
 
-  const isFormValid = Object.values(formData).every(
-    (value) => value.toString().trim() !== "",
-  );
+  const categories = [
+    "Martial Arts",
+    "Team Ball Sports",
+    "Racket Sports",
+    "Fitness",
+    "Target & Precision Sports",
+    "Equestrian Sports",
+    "Adventure & Outdoor Sports",
+    "Ice Sports",
+    "Wellness",
+    "Dance",
+  ];
 
-  /* ---------------- CLOUDINARY UPLOAD API ---------------- */
-  const uploadToCloudinary = async (file, type) => {
+  const subCategoryMap = {
+    "Martial Arts": [
+      "Karate",
+      "Taekwondo",
+      "Boxing",
+      "Wrestling",
+      "Fencing",
+      "Kendo",
+    ],
+    "Team Ball Sports": [
+      "Football",
+      "Hockey",
+      "Basketball",
+      "Handball",
+      "Rugby",
+      "American Football",
+      "Water Polo",
+      "Lacrosse",
+    ],
+    "Racket Sports": [
+      "Tennis",
+      "Badminton",
+      "Pickleball",
+      "Soft Tennis",
+      "Padel Tennis",
+      "Speedminton",
+    ],
+    Fitness: [
+      "Strength / Muscular Fitness",
+      "Muscular Endurance",
+      "Flexibility Fitness",
+      "Balance & Stability",
+      "Skill / Performance Fitness",
+    ],
+    "Target & Precision Sports": [
+      "Archery",
+      "Shooting",
+      "Darts",
+      "Bowling",
+      "Golf",
+      "Billiards",
+      "Bocce",
+      "Lawn",
+    ],
+    "Equestrian Sports": [
+      "Dressage",
+      "Show Jumping",
+      "Eventing",
+      "Cross Country",
+      "Endurance Riding",
+      "Polo",
+      "Horse Racing",
+      "Para-Equestrian",
+    ],
+    "Adventure & Outdoor Sports": [
+      "Rock Climbing",
+      "Trekking",
+      "Camping",
+      "Kayaking",
+      "Paragliding",
+      "Surfing",
+      "Mountain Biking",
+      "Ziplining",
+    ],
+    "Ice Sports": [
+      "Ice Skating",
+      "Figure Skating",
+      "Ice Hockey",
+      "Speed Skating",
+      "Short Track Skating",
+      "Ice Dancing",
+      "Curling",
+      "Synchronized Skating",
+    ],
+    Wellness: [
+      "Physical Wellness",
+      "Mental Wellness",
+      "Social Wellness",
+      "Emotional Wellness",
+      "Spiritual Wellness",
+      "Lifestyle Wellness",
+    ],
+    Dance: [
+      "Classical Dance",
+      "Contemporary Dance",
+      "Hip-Hop Dance",
+      "Folk Dance",
+      "Western Dance",
+      "Latin Dance",
+      "Fitness Dance",
+      "Creative & Kids Dance",
+    ],
+  };
+  const daysOfWeek = [
+    "Monday",
+    "Tuesday",
+    "Wednesday",
+    "Thursday",
+    "Friday",
+    "Saturday",
+    "Sunday",
+  ];
+  const timeSlots = [
+    { value: "09:00", label: "09:00 AM" },
+    { value: "10:00", label: "10:00 AM" },
+    { value: "11:00", label: "11:00 AM" },
+    { value: "12:00", label: "12:00 PM" },
+    { value: "13:00", label: "13:00 PM" },
+    { value: "14:00", label: "14:00 PM" },
+    { value: "15:00", label: "15:00 PM" },
+    { value: "16:00", label: "16:00 PM" },
+    { value: "17:00", label: "17:00 PM" },
+    { value: "18:00", label: "18:00 PM" },
+    { value: "19:00", label: "19:00 PM" },
+    { value: "20:00", label: "20:00 PM" },
+    { value: "21:00", label: "21:00 PM" },
+    { value: "22:00", label: "22:00 PM" },
+  ];
+
+
+  const subCategories = subCategoryMap[formData.category] || [];
+
+
+  /* ---------------- CLOUDINARY UPLOAD ---------------- */
+  const uploadPhoto = async (file) => {
     setUploading(true);
-    setUploadMsg("");
-
     const data = new FormData();
     data.append("file", file);
     data.append("upload_preset", "kridana_upload");
 
-    try {
-      const res = await fetch(
-        `https://api.cloudinary.com/v1_1/daiyvial8/${type}/upload`,
-        {
-          method: "POST",
-          body: data,
-        },
-      );
-
-      const result = await res.json();
-
-      if (!result.secure_url) {
-        throw new Error(result.error?.message || "Cloudinary upload failed");
+    const res = await fetch(
+      "https://api.cloudinary.com/v1_1/daiyvial8/image/upload",
+      {
+        method: "POST",
+        body: data,
       }
+    );
 
-      setUploadMsg("✅ Upload Successful!");
-      return result.secure_url;
-    } catch (err) {
-      console.error("Cloudinary Upload Error:", err);
-      alert("Upload Failed: " + err.message);
-      return "";
-    } finally {
-      setUploading(false);
-      setTimeout(() => setUploadMsg(""), 3000);
-    }
+    const result = await res.json();
+    setUploading(false);
+    return result.secure_url;
   };
 
-  /* ---------------- HANDLE PHOTO UPLOAD ---------------- */
-  const handleStudentPhotoUpload = async (e) => {
+
+  const handlePhotoChange = async (e) => {
     const file = e.target.files[0];
     if (!file) return;
+    const url = await uploadPhoto(file);
+    setPhotoUrl(url);
+  };
 
-    const url = await uploadToCloudinary(file, "image");
+  const handleChange = (e) => {
+    const { name, value } = e.target;
 
-    if (url) {
-      setFormData((prev) => ({
-        ...prev,
-        studentPhotoUrl: url,
-      }));
+    if (name === "category") {
+      setFormData({
+        ...formData,
+        category: value,
+        subCategory: "", // reset sub-category
+      });
+    } else {
+      setFormData({
+        ...formData,
+        [name]: value,
+      });
     }
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (!isFormValid) {
-      alert("Please fill all the fields");
-      return;
-    }
-
     if (!user || institute?.role !== "institute") {
       alert("Unauthorized");
       return;
     }
+    const emptyField = Object.entries(formData).find(
+      ([, value]) => !value || value.toString().trim() === ""
+    );
+
+   if (emptyField) {
+  alert("Please fill all required fields");
+  return;
+}
+
+if (!photoUrl) {
+  alert("Please upload photo before saving");
+  return;
+}
+
+
 
     try {
-      const studentCredential = await createUserWithEmailAndPassword(
+      const cred = await createUserWithEmailAndPassword(
         secondaryAuth,
         formData.email,
-        DEFAULT_PASSWORD,
+        DEFAULT_PASSWORD
       );
 
-      const studentUid = studentCredential.user.uid;
+      const studentUid = cred.user.uid;
 
       await setDoc(doc(db, "students", studentUid), {
         ...formData,
-
-        // ✅ Save student photo clearly
-        studentPhotoUrl: formData.studentPhotoUrl,
-
+        studentPhotoUrl: photoUrl,
         uid: studentUid,
         role: "student",
         instituteId: user.uid,
@@ -135,269 +271,305 @@ const AddStudentDetailsPage = () => {
         students: arrayUnion(studentUid),
       });
 
-      alert("Student created successfully (Password: 123456)");
-
-      setFormData({
-        firstName: "",
-        lastName: "",
-        fatherName: "",
-        category: "",
-        batchNumber: "",
-        joinedDate: "",
-        email: "",
-        phone: "",
-        studentFee: "",
-        dateOfBirth: "",
-        address: "",
-        studentPhotoUrl: "",
-      });
-    } catch (error) {
-      console.error("Student creation failed:", error);
-      alert(error.message);
+      alert("Student added successfully");
+    } catch (err) {
+      alert(err.message);
     }
   };
 
+  const isFormValid = Object.values({
+    ...formData,
+    photoUrl,
+  }).every((value) => value && value.toString().trim() !== "");
+
+
   return (
-    <div className="min-h-screen w-full bg-gray-100 flex justify-center items-start overflow-auto py-10 px-4">
-      {/* Main Card */}
-      <div className="w-full max-w-4xl bg-white text-black rounded-2xl shadow-xl p-6 sm:p-10 md:p-12">
-        {/* Header */}
-        <div className="mb-8 text-center">
-          <h1 className="text-2xl sm:text-3xl font-extrabold text-orange-500">
-            Add Student Details
-          </h1>
-          <p className="text-sm text-gray-500 mt-2">
-            Fill all details carefully before saving
-          </p>
+    <div className="min-h-screen bg-[#ffffff] p-8">
+      <h1 className="text-4xl font-bold text-orange-500 mb-6">
+        Add Student Details
+      </h1>
+
+      <form onSubmit={handleSubmit} className="space-y-6 max-w-6xl mx-auto">
+        {/* ---------- CARD 1 : BASIC DETAILS ---------- */}
+        <div className="bg-[#FDF2E9] rounded-xl p-6 grid grid-cols-1 md:grid-cols-6 gap-4">
+          <div className="md:col-span-2 md:row-span-2 flex flex-col items-center justify-center">
+            <div className="w-24 h-24 bg-white rounded-full overflow-hidden mb-2">
+              {photoUrl && (
+                <img
+                  src={photoUrl}
+                  alt="student"
+                  className="w-full h-full object-cover"
+                />
+              )}
+            </div>
+            <label className="text-sm cursor-pointer bg-orange-400 px-3 py-1 rounded text-white">
+              Upload Profile <span className="text-lg leading-none">↑</span>
+              <input type="file" hidden onChange={handlePhotoChange} />
+            </label>
+          </div>
+
+          <div className="md:col-span-2 flex flex-col gap-1">
+            <label className="text-black font-medium">First Name<span className="text-red-500">*</span></label>
+            <input
+              name="firstName"
+              placeholder="Enter your first name"
+              className={inputClass}
+              onChange={handleChange}
+              required
+            />
+          </div>
+
+          <div className="md:col-span-2 flex flex-col gap-1">
+            <label className="text-black font-medium">Last Name<span className="text-red-500">*</span></label>
+            <input
+              name="lastName"
+              placeholder="Enter your last name"
+              className={inputClass}
+              onChange={handleChange}
+              required
+            />
+          </div>
+          <div className="md:col-span-2 flex flex-col gap-1">
+            <label className="text-black font-medium">Father’s Name<span className="text-red-500">*</span></label>
+            <input
+              name="fatherName"
+              placeholder="Enter your father's name"
+              className={inputClass}
+              onChange={handleChange}
+              required
+            />
+          </div>
+
+          <div className="md:col-span-2 flex flex-col gap-1">
+            <label className="text-black font-medium">Date Of Birth<span className="text-red-500">*</span></label>
+            <input
+              type="date"
+              name="dob"
+              className={inputClass}
+              onChange={handleChange}
+              required
+            />
+          </div>
         </div>
 
-        {/* Form */}
-        <form className="space-y-6" onSubmit={handleSubmit}>
-          {/* ✅ Student Photo Upload */}
-          <div>
-            <label className="block text-sm font-semibold mb-2">
-              Student Photo <span className="text-red-500">*</span>
-            </label>
+        {/* ---------- CARD 2 : ADD INFORMATION ---------- */}
+        <div className="bg-[#FDF2E9] rounded-xl p-6 space-y-4">
+          <h2 className="text-2xl font-semibold text-black">
+            Add Information
+          </h2>
+          <hr className="border-orange-300 w-full opacity-70" />
+          <div className="h-2"></div>
 
-            <input
-              type="file"
-              accept="image/*"
-              onChange={handleStudentPhotoUpload}
-              className={inputClass}
-            />
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
 
-            {/* Uploading Message */}
-            {uploading && (
-              <p className="text-orange-600 font-semibold mt-2">
-                Uploading Photo...
-              </p>
-            )}
 
-            {/* Success Message */}
-            {uploadMsg && (
-              <p className="text-green-600 font-semibold mt-2">{uploadMsg}</p>
-            )}
-
-            {/* Preview */}
-            {formData.studentPhotoUrl && (
-              <img
-                src={formData.studentPhotoUrl}
-                alt="Student Preview"
-                className="mt-4 w-28 h-28 rounded-full object-cover border shadow"
-              />
-            )}
-          </div>
-
-          {/* Name */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div>
-              <label className="block text-sm font-semibold mb-2">
-                First Name <span className="text-red-500">*</span>
+            <div className="flex flex-col gap-1">
+              <label className="text-black font-medium">
+                Select Category<span className="text-red-500">*</span>
               </label>
+
+              {/* wrapper must be relative */}
+              <div className="relative">
+                <select
+                  name="category"
+                  required
+                  value={formData.category}
+                  onChange={handleChange}
+                  className={`${selectClass} pr-10`}
+                >
+                  <option value="">Select Categories</option>
+
+                  {categories.map((cat) => (
+                    <option key={cat} value={cat}>
+                      {cat}
+                    </option>
+                  ))}
+                </select>
+
+                {/* dropdown arrow */}
+                <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-orange-300 text-sm">
+                  ▼
+                </span>
+              </div>
+            </div>
+
+
+            <div className="flex flex-col gap-1">
+              <label className="text-black font-medium">
+                Select Sub-Category<span className="text-red-500">*</span>
+              </label>
+
+              <div className="relative">
+                <select
+                  name="subCategory"
+                  required
+                  value={formData.subCategory}
+                  onChange={handleChange}
+                  disabled={!formData.category}
+                  className={`${selectClass} pr-10 ${!formData.category ? "bg-gray-100 cursor-not-allowed" : ""
+                    }`}
+                >
+                  <option value="">
+                    {formData.category ? "Select Sub-Category" : "Select Category First"}
+                  </option>
+
+                  {subCategories.map((sub) => (
+                    <option key={sub} value={sub}>
+                      {sub}
+                    </option>
+                  ))}
+                </select>
+
+                <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-orange-300 text-sm">
+                  ▼
+                </span>
+              </div>
+            </div>
+
+            <div className="flex flex-col gap-1">
+              <label className="text-black font-medium">
+                Select Day<span className="text-red-500">*</span>
+              </label>
+
+              <div className="relative">
+                <select
+                  name="days"
+                  required
+                  value={formData.days}
+                  onChange={handleChange}
+                  className={`${selectClass} pr-10`}
+                >
+                  <option value="">Select Day</option>
+
+                  {daysOfWeek.map((day) => (
+                    <option key={day} value={day}>
+                      {day}
+                    </option>
+                  ))}
+                </select>
+
+                <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-orange-300 text-sm">
+                  ▼
+                </span>
+              </div>
+            </div>
+
+            <div className="flex flex-col gap-1">
+              <label className="text-black font-medium">
+                Select Timings<span className="text-red-500">*</span>
+              </label>
+
+              <div className="relative">
+                <select
+                  name="timings"
+                  required
+                  value={formData.timings}
+                  onChange={handleChange}
+                  className={`${selectClass} pr-10`}
+                >
+                  <option value="">Select Time</option>
+
+                  {timeSlots.map((time) => (
+                    <option key={time.value} value={time.value}>
+                      {time.label}
+                    </option>
+                  ))}
+                </select>
+
+                <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-orange-300 text-sm">
+                  ▼
+                </span>
+              </div>
+            </div>
+
+            <div className="flex flex-col gap-1">
+              <label className="text-black font-medium">Institute Branch<span className="text-red-500">*</span></label>
               <input
+                required
+                name="branch"
                 className={inputClass}
-                placeholder="Enter First Name"
-                value={formData.firstName}
-                onChange={(e) =>
-                  setFormData({ ...formData, firstName: e.target.value })
-                }
+                onChange={handleChange}
               />
             </div>
 
-            <div>
-              <label className="block text-sm font-semibold mb-2">
-                Last Name <span className="text-red-500">*</span>
-              </label>
+            <div className="flex flex-col gap-1">
+              <label className="text-black font-medium">Slot Number<span className="text-red-500">*</span></label>
               <input
+                required
+                name="slotNumber"
                 className={inputClass}
-                placeholder="Enter Last Name"
-                value={formData.lastName}
-                onChange={(e) =>
-                  setFormData({ ...formData, lastName: e.target.value })
-                }
-              />
-            </div>
-          </div>
-
-          {/* Father Name & Category */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div>
-              <label className="block text-sm font-semibold mb-2">
-                Father Name <span className="text-red-500">*</span>
-              </label>
-              <input
-                className={inputClass}
-                placeholder="Enter Father Name"
-                value={formData.fatherName}
-                onChange={(e) =>
-                  setFormData({ ...formData, fatherName: e.target.value })
-                }
+                onChange={handleChange}
               />
             </div>
 
-            <div>
-              <label className="block text-sm font-semibold mb-2">
-                Category <span className="text-red-500">*</span>
-              </label>
+            <div className="flex flex-col gap-1">
+              <label className="text-black font-medium">Student Fees<span className="text-red-500">*</span></label>
               <input
+                required
+                name="fees"
                 className={inputClass}
-                placeholder="Enter Category"
-                value={formData.category}
-                onChange={(e) =>
-                  setFormData({ ...formData, category: e.target.value })
-                }
-              />
-            </div>
-          </div>
-
-          {/* Batch Number & Joined Date */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div>
-              <label className="block text-sm font-semibold mb-2">
-                Batch Number <span className="text-red-500">*</span>
-              </label>
-              <input
-                className={inputClass}
-                placeholder="Enter Batch Number"
-                value={formData.batchNumber}
-                onChange={(e) =>
-                  setFormData({ ...formData, batchNumber: e.target.value })
-                }
+                onChange={handleChange}
               />
             </div>
 
-            <div>
-              <label className="block text-sm font-semibold mb-2">
-                Joined Date <span className="text-red-500">*</span>
-              </label>
+            <div className="flex flex-col gap-1">
+              <label className="text-black font-medium">Joining Date<span className="text-red-500">*</span></label>
               <input
+                required
                 type="date"
+                name="joiningDate"
                 className={inputClass}
-                value={formData.joinedDate}
-                onChange={(e) =>
-                  setFormData({ ...formData, joinedDate: e.target.value })
-                }
+                onChange={handleChange}
               />
             </div>
           </div>
+        </div>
 
-          {/* Student Fee & Date of Birth */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div>
-              <label className="block text-sm font-semibold mb-2">
-                Student Fee <span className="text-red-500">*</span>
-              </label>
+        {/* ---------- CARD 3 : CONTACT DETAILS ---------- */}
+        <div className="bg-[#FDF2E9] rounded-xl p-6 space-y-4">
+          <h2 className="text-2xl font-semibold text-black">
+            Additional Information
+          </h2>
+          <hr className="border-orange-300 w-full opacity-70" />
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+
+            <div className="flex flex-col gap-1">
+              <label className="text-black font-medium">Phone Number<span className="text-red-500">*</span></label>
               <input
-                type="number"
+                required
+                name="phone"
+                placeholder="Enter your Phone number"
                 className={inputClass}
-                placeholder="Enter Student Fee"
-                value={formData.studentFee}
-                onChange={(e) =>
-                  setFormData({ ...formData, studentFee: e.target.value })
-                }
+                onChange={handleChange}
               />
             </div>
 
-            <div>
-              <label className="block text-sm font-semibold mb-2">
-                Date of Birth <span className="text-red-500">*</span>
-              </label>
+            <div className="flex flex-col gap-1">
+              <label className="text-black font-medium">E-Mail Address<span className="text-red-500">*</span></label>
               <input
-                type="date"
+                required
+                name="email"
+                placeholder="Enter your email"
                 className={inputClass}
-                value={formData.dateOfBirth}
-                onChange={(e) =>
-                  setFormData({ ...formData, dateOfBirth: e.target.value })
-                }
+                onChange={handleChange}
               />
             </div>
           </div>
+        </div>
 
+        <button
 
-          {/* Email & Phone */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div>
-              <label className="block text-sm font-semibold mb-2">
-                E-mail <span className="text-red-500">*</span>
-              </label>
-              <input
-                type="email"
-                className={inputClass}
-                placeholder="Enter Email Address"
-                value={formData.email}
-                onChange={(e) =>
-                  setFormData({ ...formData, email: e.target.value })
-                }
-              />
-            </div>
+          className={`px-8 py-3 rounded-lg font-semibold text-white
+    ${uploading || !isFormValid
+              ? "bg-gray-300 cursor-not-allowed"
+              : "bg-orange-500 hover:bg-orange-600"}
+  `}
+        >
+          Save Student
+        </button>
 
-            <div>
-              <label className="block text-sm font-semibold mb-2">
-                Phone Number <span className="text-red-500">*</span>
-              </label>
-              <input
-                className={inputClass}
-                placeholder="Enter Phone Number"
-                value={formData.phone}
-                onChange={(e) =>
-                  setFormData({ ...formData, phone: e.target.value })
-                }
-              />
-            </div>
-          </div>
-
-          {/* Address */}
-          <div>
-            <label className="block text-sm font-semibold mb-2">
-              Address <span className="text-red-500">*</span>
-            </label>
-            <textarea
-              rows="3"
-              className={textareaClass}
-              placeholder="Enter Full Address"
-              value={formData.address}
-              onChange={(e) =>
-                setFormData({ ...formData, address: e.target.value })
-              }
-            />
-          </div>
-
-          {/* Submit */}
-          <div className="pt-6 flex justify-center">
-            <button
-              type="submit"
-              disabled={!isFormValid}
-              className={`w-full sm:w-auto px-16 py-3 rounded-xl text-lg font-extrabold transition-all duration-300
-                ${isFormValid
-                  ? "bg-orange-500 text-white hover:bg-orange-600 cursor-pointer shadow-md"
-                  : "bg-orange-200 text-white cursor-not-allowed"
-                }`}
-            >
-              Save Student
-            </button>
-          </div>
-        </form>
-      </div>
+      </form>
     </div>
   );
 };
